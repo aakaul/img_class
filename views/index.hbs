@@ -1,0 +1,17 @@
+
+  <input type="file" name="img" id="img">
+  <button onclick="postThis()">Submit</button>
+
+
+  <script>
+      
+    async function postThis() {
+        let data = new FormData();
+        data.append('img',document.getElementById('img').files[0])
+        data.append('name','abhey')
+        const res = await fetch('/users/detect-objects', {method: 'POST',body: data});
+        const resJson =await res.json();
+        console.log(resJson)
+    }
+
+  </script>
