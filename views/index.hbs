@@ -1,17 +1,166 @@
+<nav class="navbar is-primary" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+        <a class="navbar-item">
+            <strong>SKODT</strong>
+        </a>
+    </div>
+</nav>
 
-  <input type="file" name="img" id="img">
-  <button onclick="postThis()">Submit</button>
+<section class="section">
+    <div class="container">
+        <div class="field" id="drop-area">
+            <div class="file is-centered is-boxed is-success has-name">
+                <label class="file-label">
+                    <input class="file-input" type="file" name="img" id="img">
+                    <span class="file-cta">
+                        <span class="file-icon">
+                            <i class="fas fa-upload"></i>
+                        </span>
+                        <span class="file-label">
+                            Centered file…
+                        </span>
+                    </span>
+                    <span class="file-name">
+                        Screen Shot 2017-07-29 at 15.54.25.png
+                    </span>
+                </label>
+            </div>
+        </div>
+    </div>
+    <div id="gallery"></div>
 
+</section>
 
-  <script>
-      
-    async function postThis() {
-        let data = new FormData();
-        data.append('img',document.getElementById('img').files[0])
-        data.append('name','abhey')
-        const res = await fetch('/users/detect-objects', {method: 'POST',body: data});
-        const resJson =await res.json();
-        console.log(resJson)
+<script>
+    window.onload = function () {
+        dragAndDrop();
+        selectToUpload() ;
+    };
+    
+    let dropArea = document.getElementById('drop-area');
+
+    function dragAndDrop() {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].map(x => {
+            dropArea.addEventListener(x, preventDefaults, false)
+        });
+        ['dragenter', 'dragover'].map(x => {
+            dropArea.addEventListener(x, highlight, false)
+        });
+
+        ['dragleave', 'drop'].map(x => {
+            dropArea.addEventListener(x, unhighlight, false)
+        });
+
+        dropArea.addEventListener('drop', handleDrop, false)
+
     }
 
-  </script>
+    function selectToUpload() {
+        document.getElementById('img').addEventListener('change', function(){
+            (this.value.length > 0)
+                ?handleDrop()
+                :false;
+        });
+    }
+
+    function handleDrop(e) {
+        let file =  e.dataTransfer.files;
+        if(file){
+            document.getElementById('img').files = file;
+        }
+        previewFile();
+        uploadFile()
+    }
+
+
+    function preventDefaults(e) {
+        e.preventDefault()
+        e.stopPropagation()
+    }
+
+
+    function highlight(e) {
+        dropArea.classList.add('highlight')
+    }
+
+    function unhighlight(e) {
+        dropArea.classList.remove('highlight')
+    }
+
+    async function uploadFile() {
+        let data = new FormData();
+        data.append('img', document.getElementById('img').files[0]);
+        const res = await fetch('/users/detect-objects', {
+            method: 'POST',
+            body: data
+        });
+        const resJson = await res.json();
+    }
+
+    function previewFile() {
+        const file = document.getElementById('img').files[0]
+        let reader = new FileReader()
+        reader.readAsDataURL(file)
+        reader.onloadend = _ => {
+            let img = document.createElement('img')
+            img.src = reader.result
+            document.getElementById('gallery').appendChild(img)
+        }
+    }
+</script>
+
+<style>
+    .navbar-item {
+        font-size: 30px;
+    }
+
+    #drop-area {
+        border: 2px dashed #ccc;
+        border-radius: 20px;
+        width: 480px;
+        font-family: sans-serif;
+        margin: 100px auto;
+        padding: 20px;
+    }
+
+    #drop-area.highlight {
+        border-color: purple;
+    }
+
+    p {
+        margin-top: 0;
+    }
+
+    .my-form {
+        margin-bottom: 10px;
+    }
+
+    #gallery {
+        margin-top: 10px;
+    }
+
+    #gallery img {
+        width: 7000px;
+        margin-bottom: 10px;
+        margin-right: 10px;
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .button {
+        display: inline-block;
+        padding: 10px;
+        background: #ccc;
+        cursor: pointer;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    .button:hover {
+        background: #ddd;
+    }
+
+    #fileElem {
+        display: none;
+    }
+</style>

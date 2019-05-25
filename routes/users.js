@@ -1,6 +1,6 @@
 const  express = require('express');
 const  router = express.Router();
-const nsfwjs = require('@tensorflow-models/coco-ssd');
+const   nsfwjs = require('@tensorflow-models/coco-ssd');
 const { Image, createCanvas } = require('canvas');
 let model;
 
@@ -16,6 +16,8 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/detect-objects',async (req,res)=>{
+
+    console.log(req.files)
     // feed images
     const width = 300;
 
