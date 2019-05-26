@@ -5,6 +5,10 @@
         </a>
     </div>
 </nav>
+<center class="notification is-danger err-falied hidden">
+    <button class="delete" onclick="hideNotification('err-falied')"></button>
+    Something Went Wrong PLease Try again
+</center>
 
 <section class="section">
     <div class="container">
@@ -14,206 +18,45 @@
                     <input class="file-input" type="file" accept="image/x-png,image/jpeg" name="img" id="img">
                     <span class="file-cta">
                         <span class="file-icon">
-                            <i class="fas fa-upload"></i>
+                            <i class="fa fa-upload"></i>
                         </span>
                         <span class="file-label">
-                            Centered file…
+                            Drop/Select Image
                         </span>
                     </span>
                     <span class="file-name">
-                        Screen Shot 2017-07-29 at 15.54.25.png
+                        <center>
+                            file name
+                        </center>
                     </span>
                 </label>
             </div>
         </div>
     </div>
+
+    {{!-- S: Loader  --}}
+           <center>
+                <div id="svg-load" class="hidden" style=" background: white">
+                    <svg version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                        x="0px" y="0px" width="40px" height="40px" viewBox="0 0 50 50" style="enable-background:new 0 0 50 50;"
+                        xml:space="preserve">
+                        <path fill="#16a085" d="M43.935,25.145c0-10.318-8.364-18.683-18.683-18.683c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615c8.072,0,14.615,6.543,14.615,14.615H43.935z">
+                            <animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 25 25" to="360 25 25"
+                                dur="0.6s" repeatCount="indefinite" />
+                        </path>
+                    </svg>
+                    <p>Thinking</p>
+                </div>
+           </center>
+    {{!-- E:Loader --}}
+
     <div id="gallery"></div>
+
+    <div id="append-details"></div>
+
+    <center class="notification is-danger err-falied no-resultFound hidden">
+        OoOops No Result Found
+    </center>
     <div id="append-result"></div>
 
 </section>
-
-<script>
-    window.onload = function () {
-        dragAndDrop();
-        selectToUpload();
-    };
-
-    let dropArea = document.getElementById('drop-area');
-
-    function dragAndDrop() {
-        ['dragenter', 'dragover', 'dragleave', 'drop'].map(x => {
-            dropArea.addEventListener(x, preventDefaults, false)
-        });
-        ['dragenter', 'dragover'].map(x => {
-            dropArea.addEventListener(x, highlight, false)
-        });
-
-        ['dragleave', 'drop'].map(x => {
-            dropArea.addEventListener(x, unhighlight, false)
-        });
-
-        dropArea.addEventListener('drop', handleDrop, false)
-
-    }
-
-    function selectToUpload() {
-        document.getElementById('img').addEventListener('change', function () {
-            (this.value.length > 0) ?
-            handleDrop(): false;
-        });
-    }
-
-    function handleDrop(e) {
-        let file = (e) ? e.dataTransfer.files : false;
-        if (file) {
-            document.getElementById('img').files = file;
-        }
-
-        var numbInBytes = document.getElementById("img").files[0].size ;
-        const fileType = document.getElementById("img").files[0].type;
-        const fileName= document.getElementById("img").files[0].name
-        if (validateFileType() && validateFileSize(numb)) {
-            previewFile();
-            uploadFile(numb);
-        }
-    }
-
-
-    function preventDefaults(e) {
-        e.preventDefault()
-        e.stopPropagation()
-    }
-
-
-    function highlight(e) {
-        dropArea.classList.add('highlight')
-    }
-
-    function unhighlight(e) {
-        dropArea.classList.remove('highlight')
-    }
-
-    async function uploadFile(numb) {
-        let data = new FormData();
-        data.append('img', await getFileInbase64());
-        const res = await fetch('/users/detect-objects', {
-            method: 'POST',
-            body: data
-        });
-        appendResult(await res.json(),numb)
-    }
-
-    async function previewFile() {
-        let img = document.createElement('img')
-        img.src = await getFileInbase64()
-        document.getElementById('gallery').appendChild(img)
-    }
-
-    function validateFileType() {
-        var fileName = document.getElementById("img").value;
-        var idxDot = fileName.lastIndexOf(".") + 1;
-        var extFile = fileName.substr(idxDot, fileName.length).toLowerCase();
-        return (extFile == "jpg" || extFile == "jpeg" || extFile == "png") ?
-            true :
-            alert("Only jpg/jpeg and png files are allowed!");
-    }
-
-    function validateFileSize(numb) {
-        numb /= (1024 * 1024)
-        return (numb <= 5) ?
-            true :
-            alert("Please upload file with size less than 5MB");
-    }
-
-    function getFileInbase64() {
-        return new Promise((resolve, reject) => {
-            const file = document.getElementById('img').files[0]
-            let reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = _ => resolve(reader.result);
-            reader.onerror = err => console.error(err)
-        })
-    }
-
-    function appendResult({object},numb) {
-        let html = `<table class="table is-bordered is-striped is-narrow                    is-hoverable is-fullwidth">
-                        <thead>
-                            <tr>
-                                <th>object</th>
-                                <th>Probability</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                    `
-
-        object.map( x => {
-            html+=` <tr>
-                        <td>${x.class}</td>
-                        <td>${x.score.toFixed(3)}</td>
-                    </tr>`
-        });
-
-        html+='</tbody></table>';
-
-        var el = document.getElementById('append-result');
-
-        el.innerHTML = html;
-
-    }
-</script>
-
-<style>
-    .navbar-item {
-        font-size: 30px;
-    }
-
-    #drop-area {
-        border: 2px dashed #ccc;
-        border-radius: 20px;
-        width: 480px;
-        font-family: sans-serif;
-        margin: 100px auto;
-        padding: 20px;
-    }
-
-    #drop-area.highlight {
-        border-color: purple;
-    }
-
-    p {
-        margin-top: 0;
-    }
-
-    .my-form {
-        margin-bottom: 10px;
-    }
-
-    #gallery {
-        margin-top: 10px;
-    }
-
-    #gallery img {
-        width: 7000px;
-        margin-bottom: 10px;
-        margin-right: 10px;
-        vertical-align: middle;
-        text-align: center;
-    }
-
-    .button {
-        display: inline-block;
-        padding: 10px;
-        background: #ccc;
-        cursor: pointer;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-    }
-
-    .button:hover {
-        background: #ddd;
-    }
-
-    #fileElem {
-        display: none;
-    }
-</style>
