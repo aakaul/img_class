@@ -2,8 +2,15 @@ window.onload = function () {
     dragAndDrop();
     selectToUpload();
 };
+/* S:HOCs */
+const elIdDom = elId => document.getElementById(elId);
+const elSelDom = elSel => document.querySelector(elSel);
+/* S:HOCs */
 
-let dropArea = document.getElementById('drop-area');
+/* S:Drag And Drop Componeny  */
+let dropArea = elIdDom('drop-area');
+
+//event listeners manuplations 
 
 function dragAndDrop() {
     ['dragenter', 'dragover', 'dragleave', 'drop'].map(x => {
@@ -20,44 +27,31 @@ function dragAndDrop() {
     dropArea.addEventListener('drop', handleDrop, false);
 }
 
+//for input select file upload
 function selectToUpload() {
-    document.getElementById('img').addEventListener('change', function () {
+    elIdDom('img').addEventListener('change', function () {
         (this.value.length > 0) ?
         handleDrop(): false;
     });
 }
 
+// handling file drope after effects
 function handleDrop(e) {
     let file = (e) ? e.dataTransfer.files : false;
     if (file) {
-        document.getElementById('img').files = file;
+        elIdDom('img').files = file;
     }
-    const {
-        numbInBytes,
-        fileName
-    } = fileDetails();
+    const {numbInBytes,fileName} = fileDetails();
 
     if (validateFileType() && validateFileSize(numbInBytes)) {
-        document.querySelector(".err-falied").classList.add("hidden");
-        document.querySelector('.file-name').innerHTML = fileName;
+        elSelDom(".err-falied").classList.add("hidden");
+        elSelDom('.file-name').innerHTML = fileName;
         previewFile();
         uploadFile(numbInBytes);
     }
 }
 
-function fileDetails() {
-    const file = document.getElementById("img").files[0];
-    const numbInBytes = file.size;
-    const fileType = file.type;
-    const fileName = file.name;
-    return {
-        numbInBytes,
-        fileName,
-        fileType
-    }
-}
-
-
+//handling event bubbling and propagation
 function preventDefaults(e) {
     e.preventDefault()
     e.stopPropagation()
@@ -72,38 +66,21 @@ function unhighlight(e) {
     dropArea.classList.remove('highlight')
 }
 
-async function uploadFile() {
-    document.querySelector("#svg-load").classList.remove("hidden");
-    let data = new FormData();
-    data.append('img', await getFileInbase64());
-    try {
-        var res = await fetch('/detect-objects', {
-            method: 'POST',
-            body: data
-        });
-        document.querySelector("#svg-load").classList.add("hidden");
-    } catch (err) {
-         return hideNotification('err-falied');
+/* E:Drag And Drop Componeny  */
+/* S: front end file details  */
+function fileDetails() {
+    const file = elIdDom("img").files[0];
+    const numbInBytes = file.size;
+    const fileType = file.type;
+    const fileName = file.name;
+    return {
+        numbInBytes,
+        fileName,
+        fileType
     }
-    const resJson = await res.json();
-    if (resJson.status == 'success') {
-        appendResult(resJson.object);
-        apenAdditionalData(resJson.resolution);
-    } else {
-        hideNotification('err-falied');
-    }
-
 }
-
-async function previewFile() {
-    let img = document.createElement('img')
-    img.src = await getFileInbase64()
-    el = document.getElementById('gallery')
-    el.innerHTML = '<h3><strong>Image Preview</strong></h3><br>';
-    el.appendChild(img);
-}
-
-
+/* E: front end file details  */
+/* S:file validation size and type */
 function validateFileType() {
     let {
         fileType
@@ -120,17 +97,55 @@ function validateFileSize(numb) {
         true :
         alert("Please upload file with size less than 5MB");
 }
+/* E:file validation size and type */
 
+/* S: convertinf file to base 64 for sendinf and preview */
 function getFileInbase64() {
     return new Promise((resolve, reject) => {
-        const file = document.getElementById('img').files[0]
+        const file = elIdDom('img').files[0]
         let reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = _ => resolve(reader.result);
         reader.onerror = err => console.error(err)
     })
 }
+/* E: convertinf file to base 64 for sendinf and preview */
+/* S:File Preview  rendering file to user*/
+async function previewFile() {
+    let img = document.createElement('img')
+    img.src = await getFileInbase64()
+    el = elIdDom('gallery')
+    el.innerHTML = '<h3><strong>Image Preview</strong></h3><br>';
+    el.appendChild(img);
+}
+/* E:File Preview  rendering file to user*/
 
+/* S:upload file make xhr call using fetch api */
+async function uploadFile() {
+    elSelDom("#svg-load").classList.remove("hidden");
+    let data = new FormData();
+    data.append('img', await getFileInbase64());
+    try {
+        var res = await fetch('/detect-objects', {method: 'POST',body: data});
+        elSelDom("#svg-load").classList.add("hidden");
+    } catch (err) {
+         return hideNotification('err-falied');
+    }
+    const resJson = await res.json();
+    handelResponse(resJson)
+}
+/* E:upload file make xhr call using fetch api */
+/* S:handleing  xhr response */
+function handelResponse(resJson){
+    if (resJson.status == 'success') {
+        appendResult(resJson.object);
+        apenAdditionalData(resJson.resolution);
+    } else {
+        hideNotification('err-falied');
+    }
+}
+/* E:handleing  xhr response */
+/* S:rendering response */
 function appendResult(object) {
 
     if(!object){
@@ -155,9 +170,12 @@ function appendResult(object) {
 
     html += '</table>';
 
-    var el = document.getElementById('append-result');
+    const el = elIdDom('append-result');
 
     el.innerHTML = html;
+
+    // SCROLLING TO BOTTOM OF THE PAGE
+    window.scrollTo(0,document.body.scrollHeight);
 
 }
 
@@ -185,10 +203,13 @@ function apenAdditionalData(resolution) {
                 </table>
                 `;
 
-    var el = document.getElementById('append-details');
+    const el = elIdDom('append-details');
     el.innerHTML = html;
 }
+/* S:rendering response */
 
+/* S:toggling with class */
 function hideNotification(className) {
-    document.querySelector("."+className).classList.toggle("hidden");
+    elSelDom("."+className).classList.toggle("hidden");
 }
+/* E:toggling with class */
