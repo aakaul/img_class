@@ -17,7 +17,6 @@ router.get('/', function(req, res, next) {
 
 router.post('/detect-objects',async (req,res)=>{
 
-    console.log(req.files)
     // feed images
     const width = 300;
 
@@ -29,8 +28,7 @@ router.post('/detect-objects',async (req,res)=>{
 
     const img = new Image();
 
-    img.onload = async () => {
-
+    img.onload = async function(){
         ctx.drawImage(img, 0, 0, width, height);
         
         const predictions = await model.detect(canvas);
@@ -39,6 +37,12 @@ router.post('/detect-objects',async (req,res)=>{
     }
     img.onerror = err => { throw err }
     img.src = 'https://images.unsplash.com/photo-1468530986413-2c93495ed020?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80';
+
+    console.log(img.naturalHeight)
+    let rQImage = req.files.img;
+    const fileSizeInBytes=rQImage.size;
+    const fileType = rQImage.mimetype;
+    console.table({fileSizeInBytes,fileType})
 
 })
 module.exports = router;

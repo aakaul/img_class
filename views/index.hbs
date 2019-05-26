@@ -11,7 +11,7 @@
         <div class="field" id="drop-area">
             <div class="file is-centered is-boxed is-success has-name">
                 <label class="file-label">
-                    <input class="file-input" type="file" name="img" id="img">
+                    <input class="file-input" type="file" accept="image/x-png,image/jpeg" name="img" id="img">
                     <span class="file-cta">
                         <span class="file-icon">
                             <i class="fas fa-upload"></i>
@@ -36,7 +36,7 @@
         dragAndDrop();
         selectToUpload() ;
     };
-    
+
     let dropArea = document.getElementById('drop-area');
 
     function dragAndDrop() {
@@ -64,12 +64,14 @@
     }
 
     function handleDrop(e) {
-        let file =  e.dataTransfer.files;
+        let file =(e)?e.dataTransfer.files:false;
         if(file){
             document.getElementById('img').files = file;
         }
-        previewFile();
-        uploadFile()
+        if(validateFileType()&&validateFileSize()){
+            previewFile();
+            uploadFile();
+        }
     }
 
 
@@ -106,6 +108,22 @@
             img.src = reader.result
             document.getElementById('gallery').appendChild(img)
         }
+    }
+
+    function validateFileType(){
+        var fileName = document.getElementById("img").value;
+        var idxDot = fileName.lastIndexOf(".") + 1;
+        var extFile = fileName.substr(idxDot, fileName.length).toLowerCase();
+        return (extFile=="jpg" || extFile=="jpeg" || extFile=="png")
+                ?true 
+                :alert("Only jpg/jpeg and png files are allowed!");   
+    }
+
+    function validateFileSize(){
+         var numb = document.getElementById("img").files[0].size/(1024*1024);
+         return (numb<=5)
+                ?true
+                :alert("Please upload file with size less than 5MB");
     }
 </script>
 
