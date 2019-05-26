@@ -33,16 +33,16 @@ router.post('/detect-objects',async (req,res)=>{
         
         const predictions = await model.detect(canvas);
         // Classify the image
-        res.send({'object':predictions[0].class});
+        res.send({'object':predictions});
     }
     img.onerror = err => { throw err }
-    img.src = 'https://images.unsplash.com/photo-1468530986413-2c93495ed020?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80';
+    img.src = req.body.img;
 
-    console.log(img.naturalHeight)
+    /* 
     let rQImage = req.files.img;
     const fileSizeInBytes=rQImage.size;
     const fileType = rQImage.mimetype;
-    console.table({fileSizeInBytes,fileType})
+    console.table({fileSizeInBytes,fileType}) */
 
 })
 module.exports = router;
