@@ -29,11 +29,14 @@ router.post('/detect-objects',async (req,res)=>{
     const img = new Image();
 
     img.onload = async function(){
+
+        const resolution = img.width +'x'+ img.height;
+
         ctx.drawImage(img, 0, 0, width, height);
         
         const predictions = await model.detect(canvas);
         // Classify the image
-        res.send({'object':predictions});
+        res.send({'object':predictions,resolution});
     }
     img.onerror = err => { throw err }
     img.src = req.body.img;
