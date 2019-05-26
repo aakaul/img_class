@@ -99,7 +99,8 @@ function validateFileSize(numb) {
 }
 /* E:file validation size and type */
 
-/* S: convertinf file to base 64 for sendinf and preview */function getFileInbase64() {
+/* S: convertinf file to base 64 for sendinf and preview */
+function getFileInbase64() {
     return new Promise((resolve, reject) => {
         const file = elIdDom('img').files[0]
         let reader = new FileReader();
@@ -172,6 +173,9 @@ function appendResult(object) {
     const el = elIdDom('append-result');
 
     el.innerHTML = html;
+
+    // SCROLLING TO BOTTOM OF THE PAGE
+    window.scrollTo(0,document.body.scrollHeight);
 
 }
 
